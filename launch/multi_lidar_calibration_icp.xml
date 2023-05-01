@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="initial_pose" default="[0.0, 0.0, 0.0, 0.0, 1.57, 0.0]" />
+  <arg name="max_iteration" default="100" />
+  <arg name="transform_epsilon" default="1e-9" />
+  <arg name="max_coorespondence_distance" default="0.05" />
+  <arg name="euclidean_fitness_epsilon" default="0.5" />
+  <arg name="ransac_outlier_rejection_threshold" default="1.1" />
+  <arg name="input/source_pointcloud" default="/rs16/points" />
+  <arg name="input/target_pointcloud" default="/rsbp/points" />
+
+  <node pkg="multi_lidar_calibration_icp" name="multi_lidar_calibration_icp_node" exec="multi_lidar_calibration_icp_node" output="screen">
+    <param name="initial_pose" value="$(var initial_pose)"/>
+    <param name="max_iteration" value="$(var max_iteration)"/>
+    <param name="transform_epsilon" value="$(var transform_epsilon)"/>
+    <param name="max_coorespondence_distance" value="$(var max_coorespondence_distance)"/>
+    <param name="euclidean_fitness_epsilon" value="$(var euclidean_fitness_epsilon)" />
+    <param name="ransac_outlier_rejection_threshold" value="$(var ransac_outlier_rejection_threshold)" />
+    <remap from="~/input/source_pointcloud" to="$(var input/source_pointcloud)"/>
+    <remap from="~/input/target_pointcloud" to="$(var input/target_pointcloud)"/>
+  </node>
+
+</launch>
