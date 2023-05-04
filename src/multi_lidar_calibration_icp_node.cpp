@@ -1,4 +1,4 @@
-#include <multi_lidar_calibration_icp/multi_lidar_calibration_icp.hpp>
+#include <multi_lidar_calibration/multi_lidar_calibration_icp.hpp>
 
 int main(int argc, char ** argv)
 { 

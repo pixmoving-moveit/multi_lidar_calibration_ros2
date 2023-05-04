@@ -1,32 +1,32 @@
-#include <multi_lidar_calibration/multi_lidar_calibration_icp.hpp>
+#include <multi_lidar_calibration/multi_lidar_calibration_ndt.hpp>
 
 namespace calibration
 {
-namespace multi_lidar_calibration_icp
+namespace multi_lidar_calibration_ndt
 {
 
-MultiLidarCalibrationIcp::MultiLidarCalibrationIcp()
-: Node("multi_lidar_calibration_icp"),
+MultiLidarCalibrationNdt::MultiLidarCalibrationNdt()
+: Node("multi_lidar_calibration_ndt"),
   pointcloud_source_sub_(this, "~/input/source_pointcloud", rmw_qos_profile_sensor_data),
   pointcloud_target_sub_(this, "~/input/target_pointcloud", rmw_qos_profile_sensor_data),
   sync_(SyncPolicy(10), pointcloud_source_sub_, pointcloud_target_sub_)
 {
-  sync_.setMaxIntervalDuration(rclcpp::Duration(1, 0));
+  sync_.setMaxIntervalDuration(rclcpp::Duration(1.0, 0));
   // initialize parameters of node
   param_.initial_pose =
     declare_parameter<std::vector<double>>("initial_pose", {0.0, 0.0, 0.0, 0.0, 1.57, 0.0});
+  param_.leaf_size = declare_parameter<double>("leaf_size", 0.1);
   param_.max_iteration = declare_parameter<int>("max_iteration", 100);
-  param_.transform_epsilon = declare_parameter<double>("transform_epsilon", 1e-9);
-  param_.max_coorespondence_distance =
-    declare_parameter<double>("max_coorespondence_distance", 0.05);
-  param_.euclidean_fitness_epsilon = declare_parameter<double>("euclidean_fitness_epsilon", 1.0);
-  param_.ransac_outlier_rejection_threshold =
-    declare_parameter<double>("ransac_outlier_rejection_threshold", 1.5);
-  icp_.setMaximumIterations(param_.max_iteration);
-  icp_.setTransformationEpsilon(param_.transform_epsilon);
-  icp_.setMaxCorrespondenceDistance(param_.max_coorespondence_distance);
-  icp_.setEuclideanFitnessEpsilon(param_.euclidean_fitness_epsilon);
-  icp_.setRANSACOutlierRejectionThreshold(param_.ransac_outlier_rejection_threshold);
+  param_.transform_epsilon = declare_parameter<double>("transform_epsilon", 0.01);
+  param_.step_size = declare_parameter<double>("step_size", 0.1);
+  param_.resolution = declare_parameter<double>("resolution", 0.5);
+
+  approximate_voxel_filter_.setLeafSize(param_.leaf_size, param_.leaf_size, param_.leaf_size);
+
+  ndt_.setMaximumIterations(param_.max_iteration);
+  ndt_.setTransformationEpsilon(param_.transform_epsilon);
+  ndt_.setStepSize(param_.step_size);
+  ndt_.setResolution(param_.resolution);
 
   Eigen::Translation3f initial_translation(
     param_.initial_pose.at(0), param_.initial_pose.at(1), param_.initial_pose.at(2));
@@ -37,23 +37,24 @@ MultiLidarCalibrationIcp::MultiLidarCalibrationIcp()
   current_transform_mtraix_ =
     (initial_translation * initial_rotation_x * initial_rotation_y * initial_rotation_z)
       .matrix();
-  std::cout << "initial guess: " << current_transform_mtraix_ << std::endl;
+  std::cout << "initial guess: " << std::endl << current_transform_mtraix_ << std::endl;
 
   // tf2 broadcaster
   tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
   sync_.registerCallback(std::bind(
-    &MultiLidarCalibrationIcp::callbackLidars, this, std::placeholders::_1,
+    &MultiLidarCalibrationNdt::callbackLidars, this, std::placeholders::_1,
     std::placeholders::_2));
 }
 
-MultiLidarCalibrationIcp::~MultiLidarCalibrationIcp()
+MultiLidarCalibrationNdt::~MultiLidarCalibrationNdt()
 {
 }
 
-void MultiLidarCalibrationIcp::callbackLidars(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & point_1,
+void MultiLidarCalibrationNdt::callbackLidars(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & point_1,
     const sensor_msgs::msg::PointCloud2::ConstSharedPtr & point_2)
 {
+  rclcpp::Time start_time = this->now();
   pcl::PointCloud<pcl::PointXYZI>::Ptr source_pointcloud(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr target_pointcloud (new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr final_pointcloud (new pcl::PointCloud<pcl::PointXYZI>);
@@ -66,21 +67,21 @@ void MultiLidarCalibrationIcp::callbackLidars(const sensor_msgs::msg::PointCloud
   pcl::fromROSMsg(*point_1, *source_pointcloud);
   pcl::fromROSMsg(*point_2, *target_pointcloud);
 
-  for (int i = 0; i<target_pointcloud->points.size(); i++)
-  {
-    if(target_pointcloud->points.at(i).x > -5.0)
-      filtered_target_pointcloud->points.push_back(target_pointcloud->points.at(i));
-  }
-  icp_.setInputSource(source_pointcloud);
-  icp_.setInputTarget(filtered_target_pointcloud);
+  approximate_voxel_filter_.setInputCloud(source_pointcloud);
+  approximate_voxel_filter_.filter(*filtered_source_pointcloud);
+  approximate_voxel_filter_.setInputCloud(target_pointcloud);
+  approximate_voxel_filter_.filter(*filtered_target_pointcloud);
 
-  icp_.align(*final_pointcloud, current_transform_mtraix_);
+  ndt_.setInputSource(filtered_source_pointcloud);
+  ndt_.setInputTarget(filtered_target_pointcloud);
 
-  if (icp_.hasConverged())
+  ndt_.align(*final_pointcloud, current_transform_mtraix_);
+
+  if (ndt_.hasConverged())
   {
-    current_transform_mtraix_ = icp_.getFinalTransformation();
-    std::cout << "ICP converged." << std::endl
-              << "The score is " << icp_.getFitnessScore() << std::endl;
+    current_transform_mtraix_ = ndt_.getFinalTransformation();
+    std::cout << "NDT converged." << std::endl
+              << "The score is " << ndt_.getFitnessScore() << std::endl;
     std::cout << "Transformation matrix:" << std::endl;
     std::cout << current_transform_mtraix_ << std::endl;
     Eigen::Matrix3f rotation_matrix = current_transform_mtraix_.block(0, 0, 3, 3);
@@ -89,9 +90,6 @@ void MultiLidarCalibrationIcp::callbackLidars(const sensor_msgs::msg::PointCloud
     std::cout << "ros2 run tf2_ros static_transform_publisher " << translation_vector.transpose()
               << " " << rotation_matrix.eulerAngles(2,1,0).transpose() << " " << point_1->header.frame_id.c_str() 
               << " " << point_2->header.frame_id.c_str() << std::endl;
-
-    std::cout << "Corresponding transformation matrix:" << std::endl
-              << std::endl << current_transform_mtraix_ << std::endl << std::endl;
 
     Eigen::Quaternionf q(rotation_matrix);
     geometry_msgs::msg::TransformStamped t;
@@ -107,7 +105,9 @@ void MultiLidarCalibrationIcp::callbackLidars(const sensor_msgs::msg::PointCloud
     t.transform.rotation.w = q.w();
     tf_broadcaster_->sendTransform(t);
   }
+  rclcpp::Time end_time = this->now();
+  std::cout << "process time: " << (end_time - start_time).seconds() * 1000.0 << "ms.\n";
 }
 
-} // namespace multi_lidar_calibration_icp
+} // namespace multi_lidar_calibration_ndt
 } // calibration 

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>multi_lidar_calibration_icp</name>
+  <name>multi_lidar_calibration</name>
   <version>0.9.0</version>
   <description>The lidar 2 lidar extrinsics calibration package</description>
   <maintainer email="mark@pixmoving.net">Mark Jin</maintainer>

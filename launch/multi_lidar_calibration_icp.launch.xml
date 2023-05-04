@@ -9,7 +9,7 @@
   <arg name="input/source_pointcloud" default="/rs16/points" />
   <arg name="input/target_pointcloud" default="/rsbp/points" />
 
-  <node pkg="multi_lidar_calibration_icp" name="multi_lidar_calibration_icp_node" exec="multi_lidar_calibration_icp_node" output="screen">
+  <node pkg="multi_lidar_calibration" name="multi_lidar_calibration_icp_node" exec="multi_lidar_calibration_icp_node" output="screen">
     <param name="initial_pose" value="$(var initial_pose)"/>
     <param name="max_iteration" value="$(var max_iteration)"/>
     <param name="transform_epsilon" value="$(var transform_epsilon)"/>

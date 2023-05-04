@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(multi_lidar_calibration_icp)
+project(multi_lidar_calibration)
 
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
@@ -28,6 +28,20 @@ ament_auto_add_executable(
 target_link_libraries(
   multi_lidar_calibration_icp_node
   multi_lidar_calibration_icp
+)
+
+ament_auto_add_library(multi_lidar_calibration_ndt SHARED
+  src/multi_lidar_calibration_ndt.cpp
+)
+
+ament_auto_add_executable(
+  multi_lidar_calibration_ndt_node
+  src/multi_lidar_calibration_ndt_node.cpp
+)
+
+target_link_libraries(
+  multi_lidar_calibration_ndt_node
+  multi_lidar_calibration_ndt
 )
 
 # install
