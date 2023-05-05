@@ -44,6 +44,22 @@ target_link_libraries(
   multi_lidar_calibration_ndt
 )
 
+
+ament_auto_add_library(filters_pass_through SHARED
+  src/filters_pass_through.cpp
+)
+
+ament_auto_add_executable(
+  filters_pass_through_node
+  src/filters_pass_through_node.cpp
+)
+
+target_link_libraries(
+  filters_pass_through_node
+  filters_pass_through
+)
+
+
 # install
 ament_auto_package(
   INSTALL_TO_SHARE
