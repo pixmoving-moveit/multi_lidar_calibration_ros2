@@ -4,8 +4,8 @@ from launch_ros.actions import Node
 def generate_launch_description():
     pass_through_node = Node(
         package='multi_lidar_calibration',
-        executable='multi_lidar_calibration_ndt_node',
-        name='multi_lidar_calibration_ndt_node',
+        executable='point_cloud_filter_node',
+        name='point_cloud_filter_node',
         output='screen',
         parameters=[{
             'input_topic_name':"/input/point_cloud",

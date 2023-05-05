@@ -45,18 +45,18 @@ target_link_libraries(
 )
 
 
-ament_auto_add_library(filters_pass_through SHARED
-  src/filters_pass_through.cpp
+ament_auto_add_library(point_cloud_filter SHARED
+  src/point_cloud_filter.cpp
 )
 
 ament_auto_add_executable(
-  filters_pass_through_node
-  src/filters_pass_through_node.cpp
+  point_cloud_filter_node
+  src/point_cloud_filter_node.cpp
 )
 
 target_link_libraries(
-  filters_pass_through_node
-  filters_pass_through
+  point_cloud_filter_node
+  point_cloud_filter
 )
 
 

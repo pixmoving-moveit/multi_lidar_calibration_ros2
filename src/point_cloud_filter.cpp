@@ -1,4 +1,4 @@
-#include <multi_lidar_calibration/filters_pass_through.hpp>
+#include <multi_lidar_calibration/point_cloud_filter.hpp>
 namespace calibration
 {
 namespace filters_pass_through
