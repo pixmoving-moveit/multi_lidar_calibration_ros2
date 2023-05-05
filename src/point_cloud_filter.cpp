@@ -10,14 +10,14 @@ PointCloudFilter::PointCloudFilter() : Node("point_cloud_filter")
   param_.input_topic_name = declare_parameter<std::string>("input_topic_name", "/input/point_cloud");
   param_.output_topic_name = declare_parameter<std::string>("output_topic_name", "/output/point_cloud");
 
-  param_.min_x = declare_parameter<double>("min_x", 0);
-  param_.max_x = declare_parameter<double>("max_x", 10);
+  param_.min_x = declare_parameter<double>("min_x", 0.0);
+  param_.max_x = declare_parameter<double>("max_x", 10.0);
 
-  param_.min_y = declare_parameter<double>("min_y", -10);
-  param_.max_y = declare_parameter<double>("max_y", 10);
+  param_.min_y = declare_parameter<double>("min_y", -10.0);
+  param_.max_y = declare_parameter<double>("max_y", 10.0);
 
-  param_.min_z = declare_parameter<double>("min_z", -2);
-  param_.max_z = declare_parameter<double>("max_z", 10);
+  param_.min_z = declare_parameter<double>("min_z", -2.0);
+  param_.max_z = declare_parameter<double>("max_z", 10.0);
 
 
   // Create publisher and subscriber
