@@ -20,6 +20,28 @@ MultiLidarCalibrationNdt::MultiLidarCalibrationNdt()
   param_.transform_epsilon = declare_parameter<double>("transform_epsilon", 0.01);
   param_.step_size = declare_parameter<double>("step_size", 0.1);
   param_.resolution = declare_parameter<double>("resolution", 0.5);
+  RS_INFO << "-------------------------config---------------------------" << RS_REND;
+  RS_INFO << "initial_pose: " ;
+  for (const auto& val : param_.initial_pose) {
+        RS_INFO << val << " ";
+    }
+  RS_INFO << RS_REND;
+
+  RS_INFO << "leaf_size: " ;
+  RS_INFO << param_.leaf_size << RS_REND;
+
+  RS_INFO << "max_iteration: " ;
+  RS_INFO <<  param_.max_iteration << RS_REND;
+
+  RS_INFO << "transform_epsilon: ";
+  RS_INFO <<  param_.transform_epsilon << RS_REND;
+  
+  RS_INFO << "step_size: " ;
+  RS_INFO << param_.step_size << RS_REND;
+
+  RS_INFO << "resolution: " ;
+  RS_INFO << param_.resolution << RS_REND;
+  RS_INFO << "--------------------------------------------------------" << RS_REND;
 
   approximate_voxel_filter_.setLeafSize(param_.leaf_size, param_.leaf_size, param_.leaf_size);
 

@@ -27,6 +27,8 @@
 #include <pcl/registration/ndt.h>
 #include <pcl/filters/approximate_voxel_grid.h>
 
+#include "log.hpp"
+
 
 namespace calibration
 {
