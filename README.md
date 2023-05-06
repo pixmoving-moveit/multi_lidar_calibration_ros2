@@ -75,8 +75,6 @@ ros2 launch multi_lidar_calibration multi_lidar_calbiration_ndt.launch.xml
 
 ![lidar2lidar](./images/lidar2lidar.gif)
 
-### clone the repo in you workspace
-
 ## Reference
 
 - [lidar2lidar calibration](https://pixmoving-moveit.github.io/pixkit-documentation-en/sensor-calibration/LiDAR-LiDAR-calibration/)
