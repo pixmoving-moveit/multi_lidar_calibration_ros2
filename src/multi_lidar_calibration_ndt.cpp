@@ -67,13 +67,11 @@ void MultiLidarCalibrationNdt::callbackLidars(const sensor_msgs::msg::PointCloud
   pcl::fromROSMsg(*point_1, *source_pointcloud);
   pcl::fromROSMsg(*point_2, *target_pointcloud);
 
-  approximate_voxel_filter_.setInputCloud(source_pointcloud);
-  approximate_voxel_filter_.filter(*filtered_source_pointcloud);
   approximate_voxel_filter_.setInputCloud(target_pointcloud);
   approximate_voxel_filter_.filter(*filtered_target_pointcloud);
 
-  ndt_.setInputSource(filtered_source_pointcloud);
-  ndt_.setInputTarget(filtered_target_pointcloud);
+  ndt_.setInputSource(filtered_target_pointcloud);
+  ndt_.setInputTarget(source_pointcloud);
 
   ndt_.align(*final_pointcloud, current_transform_mtraix_);
 

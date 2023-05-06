@@ -22,6 +22,9 @@ MultiLidarCalibrationIcp::MultiLidarCalibrationIcp()
   param_.euclidean_fitness_epsilon = declare_parameter<double>("euclidean_fitness_epsilon", 1.0);
   param_.ransac_outlier_rejection_threshold =
     declare_parameter<double>("ransac_outlier_rejection_threshold", 1.5);
+
+  approximate_voxel_filter_.setLeafSize(0.2, 0.2, 0.2);
+  
   icp_.setMaximumIterations(param_.max_iteration);
   icp_.setTransformationEpsilon(param_.transform_epsilon);
   icp_.setMaxCorrespondenceDistance(param_.max_coorespondence_distance);
@@ -37,7 +40,7 @@ MultiLidarCalibrationIcp::MultiLidarCalibrationIcp()
   current_transform_mtraix_ =
     (initial_translation * initial_rotation_x * initial_rotation_y * initial_rotation_z)
       .matrix();
-  std::cout << "initial guess: " << current_transform_mtraix_ << std::endl;
+  std::cout << "initial guess: " << std::endl << current_transform_mtraix_ << std::endl;
 
   // tf2 broadcaster
   tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
@@ -66,13 +69,11 @@ void MultiLidarCalibrationIcp::callbackLidars(const sensor_msgs::msg::PointCloud
   pcl::fromROSMsg(*point_1, *source_pointcloud);
   pcl::fromROSMsg(*point_2, *target_pointcloud);
 
-  for (int i = 0; i<target_pointcloud->points.size(); i++)
-  {
-    if(target_pointcloud->points.at(i).x > -5.0)
-      filtered_target_pointcloud->points.push_back(target_pointcloud->points.at(i));
-  }
-  icp_.setInputSource(source_pointcloud);
-  icp_.setInputTarget(filtered_target_pointcloud);
+  approximate_voxel_filter_.setInputCloud(target_pointcloud);
+  approximate_voxel_filter_.filter(*filtered_target_pointcloud);
+
+  icp_.setInputSource(filtered_target_pointcloud);
+  icp_.setInputTarget(source_pointcloud);
 
   icp_.align(*final_pointcloud, current_transform_mtraix_);
 
@@ -89,9 +90,6 @@ void MultiLidarCalibrationIcp::callbackLidars(const sensor_msgs::msg::PointCloud
     std::cout << "ros2 run tf2_ros static_transform_publisher " << translation_vector.transpose()
               << " " << rotation_matrix.eulerAngles(2,1,0).transpose() << " " << point_1->header.frame_id.c_str() 
               << " " << point_2->header.frame_id.c_str() << std::endl;
-
-    std::cout << "Corresponding transformation matrix:" << std::endl
-              << std::endl << current_transform_mtraix_ << std::endl << std::endl;
 
     Eigen::Quaternionf q(rotation_matrix);
     geometry_msgs::msg::TransformStamped t;

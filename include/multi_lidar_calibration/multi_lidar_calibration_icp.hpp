@@ -25,6 +25,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/registration/icp.h>
+#include <pcl/filters/approximate_voxel_grid.h>
 
 
 namespace calibration
@@ -51,6 +52,9 @@ private:
   Param param_;
   message_filters::Subscriber<sensor_msgs::msg::PointCloud2> pointcloud_source_sub_;
   message_filters::Subscriber<sensor_msgs::msg::PointCloud2> pointcloud_target_sub_;
+
+  // downsampling filter
+  pcl::ApproximateVoxelGrid<pcl::PointXYZI> approximate_voxel_filter_;
 
   // icp registration
   pcl::IterativeClosestPoint<pcl::PointXYZI, pcl::PointXYZI> icp_;
