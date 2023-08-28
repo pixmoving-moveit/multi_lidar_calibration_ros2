@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="pcd_path" default="" />
+  <arg name="initial_pose" default="[0.0, 0.0, -0.4, 0.0, 1.57, 0.0]" />
+  <arg name="leaf_size" default="0.2" />
+  <arg name="max_iteration" default="10" />
+  <arg name="transform_epsilon" default="0.001" />
+  <arg name="step_size" default="0.05" />
+  <arg name="resolution" default="0.5" />
+  <arg name="input/target_pointcloud" default="/rsbp/points" />
+
+  <node pkg="multi_lidar_calibration" name="multi_lidar_calibration_ndt_map_node" exec="multi_lidar_calibration_ndt_map_node" output="screen">
+    <param name="pcd_path" value="$(var pcd_path)"/>
+    <param name="initial_pose" value="$(var initial_pose)"/>
+    <param name="leaf_size" value="$(var leaf_size)" />
+    <param name="max_iteration" value="$(var max_iteration)"/>
+    <param name="transform_epsilon" value="$(var transform_epsilon)"/>
+    <param name="step_size" value="$(var step_size)"/>
+    <param name="resolution" value="$(var resolution)" />
+    <remap from="~/input/target_pointcloud" to="$(var input/target_pointcloud)"/>
+  </node>
+
+</launch>

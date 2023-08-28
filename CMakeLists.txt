@@ -44,6 +44,20 @@ target_link_libraries(
   multi_lidar_calibration_ndt
 )
 
+ament_auto_add_library(multi_lidar_calibration_ndt_map SHARED
+  src/multi_lidar_calibration_ndt_map.cpp
+)
+
+ament_auto_add_executable(
+  multi_lidar_calibration_ndt_map_node
+  src/multi_lidar_calibration_ndt_map_node.cpp
+)
+
+target_link_libraries(
+  multi_lidar_calibration_ndt_map_node
+  multi_lidar_calibration_ndt_map
+)
+
 # install
 ament_auto_package(
   INSTALL_TO_SHARE
