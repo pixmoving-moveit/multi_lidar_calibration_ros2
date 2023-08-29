@@ -19,9 +19,11 @@ MultiLidarCalibrationNdtMap::MultiLidarCalibrationNdtMap()
   param_.resolution = declare_parameter<double>("resolution", 0.5);
 
   // load pcd file
-  pcl::io::loadPCDFile<pcl::PointXYZI>(param_.pcd_path, *source_pointcloud_);
+  // source_pointcloud_ = new pcl::PointCloud<pcl::PointXYZI>;
+  pcl::io::loadPCDFile<pcl::PointXYZI>(param_.pcd_path, source_pointcloud_);
+
   pointcloud_target_sub_ = create_subscription<sensor_msgs::msg::PointCloud2>(
-    "~/input/target_pointcloud", 1,
+    "~/input/target_pointcloud", rclcpp::SensorDataQoS(),
     std::bind(&MultiLidarCalibrationNdtMap::callbackLidar, this, std::placeholders::_1));
 
   approximate_voxel_filter_.setLeafSize(param_.leaf_size, param_.leaf_size, param_.leaf_size);
@@ -54,9 +56,11 @@ MultiLidarCalibrationNdtMap::~MultiLidarCalibrationNdtMap()
 void MultiLidarCalibrationNdtMap::callbackLidar(const sensor_msgs::msg::PointCloud2::ConstSharedPtr & msg)
 {
   rclcpp::Time start_time = this->now();
+  
   pcl::PointCloud<pcl::PointXYZI>::Ptr target_pointcloud (new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr final_pointcloud (new pcl::PointCloud<pcl::PointXYZI>);
 
+  // pcl::io::loadPCDFile<pcl::PointXYZI>(param_.pcd_path, *source_pointcloud);
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_source_pointcloud(
     new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_target_pointcloud(
@@ -68,7 +72,7 @@ void MultiLidarCalibrationNdtMap::callbackLidar(const sensor_msgs::msg::PointClo
   approximate_voxel_filter_.filter(*filtered_target_pointcloud);
 
   ndt_.setInputSource(filtered_target_pointcloud);
-  ndt_.setInputTarget(source_pointcloud_);
+  ndt_.setInputTarget(std::make_shared<pcl::PointCloud<pcl::PointXYZI>>(source_pointcloud_));
 
   ndt_.align(*final_pointcloud, current_transform_mtraix_);
 

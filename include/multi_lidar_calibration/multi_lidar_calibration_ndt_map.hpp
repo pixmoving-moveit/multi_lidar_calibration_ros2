@@ -65,10 +65,9 @@ private:
 
   // tf2
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+  pcl::PointCloud<pcl::PointXYZI> source_pointcloud_;
 
 public:
-  // pcd pointcloud
-  std::shared_ptr<pcl::PointCloud<pcl::PointXYZI>> source_pointcloud_;
   MultiLidarCalibrationNdtMap();
   ~MultiLidarCalibrationNdtMap();
   void callbackLidar(
