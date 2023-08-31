@@ -78,6 +78,7 @@ void MultiLidarCalibrationNdtMap::callbackLidar(const sensor_msgs::msg::PointClo
   if(!is_source_pt_set_)
   {
     ndt_.setInputTarget(std::make_shared<pcl::PointCloud<pcl::PointXYZI>>(source_pointcloud_));
+    is_source_pt_set_ = true;
   }
 
   ndt_.align(*final_pointcloud, current_transform_mtraix_);
