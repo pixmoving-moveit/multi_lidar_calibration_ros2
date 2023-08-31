@@ -18,6 +18,9 @@ MultiLidarCalibrationNdtMap::MultiLidarCalibrationNdtMap()
   param_.step_size = declare_parameter<double>("step_size", 0.1);
   param_.resolution = declare_parameter<double>("resolution", 0.5);
 
+  // sign
+  is_source_pt_set_ = false;
+
   // load pcd file
   // source_pointcloud_ = new pcl::PointCloud<pcl::PointXYZI>;
   pcl::io::loadPCDFile<pcl::PointXYZI>(param_.pcd_path, source_pointcloud_);
@@ -72,7 +75,10 @@ void MultiLidarCalibrationNdtMap::callbackLidar(const sensor_msgs::msg::PointClo
   approximate_voxel_filter_.filter(*filtered_target_pointcloud);
 
   ndt_.setInputSource(filtered_target_pointcloud);
-  ndt_.setInputTarget(std::make_shared<pcl::PointCloud<pcl::PointXYZI>>(source_pointcloud_));
+  if(!is_source_pt_set_)
+  {
+    ndt_.setInputTarget(std::make_shared<pcl::PointCloud<pcl::PointXYZI>>(source_pointcloud_));
+  }
 
   ndt_.align(*final_pointcloud, current_transform_mtraix_);
 

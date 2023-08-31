@@ -66,6 +66,7 @@ private:
   // tf2
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   pcl::PointCloud<pcl::PointXYZI> source_pointcloud_;
+  bool is_source_pt_set_;
 
 public:
   MultiLidarCalibrationNdtMap();
