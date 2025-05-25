@@ -31,6 +31,12 @@ MultiLidarCalibrationNdtMap::MultiLidarCalibrationNdtMap()
 
   approximate_voxel_filter_.setLeafSize(param_.leaf_size, param_.leaf_size, param_.leaf_size);
 
+  pcl::PointCloud<pcl::PointXYZI>::Ptr source_pointcloud_ptr_ (new pcl::PointCloud<pcl::PointXYZI>);
+
+  *source_pointcloud_ptr_ = source_pointcloud_;
+  approximate_voxel_filter_.setInputCloud(source_pointcloud_ptr_);
+  approximate_voxel_filter_.filter(source_pointcloud_ds_);
+
   ndt_.setMaximumIterations(param_.max_iteration);
   ndt_.setTransformationEpsilon(param_.transform_epsilon);
   ndt_.setStepSize(param_.step_size);
@@ -77,7 +83,7 @@ void MultiLidarCalibrationNdtMap::callbackLidar(const sensor_msgs::msg::PointClo
   ndt_.setInputSource(filtered_target_pointcloud);
   if(!is_source_pt_set_)
   {
-    ndt_.setInputTarget(std::make_shared<pcl::PointCloud<pcl::PointXYZI>>(source_pointcloud_));
+    ndt_.setInputTarget(std::make_shared<pcl::PointCloud<pcl::PointXYZI>>(source_pointcloud_ds_));
     is_source_pt_set_ = true;
   }
 
