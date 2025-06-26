@@ -9,7 +9,7 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 
-#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.h>
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -64,7 +64,7 @@ private:
   Eigen::Matrix4f current_transform_mtraix_;
 
   // tf2
-  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+  std::unique_ptr<tf2_ros::StaticTransformBroadcaster> tf_broadcaster_;
   pcl::PointCloud<pcl::PointXYZI> source_pointcloud_;
   bool is_source_pt_set_;
 

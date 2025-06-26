@@ -48,7 +48,7 @@ MultiLidarCalibrationNdtMap::MultiLidarCalibrationNdtMap()
   std::cout << "initial guess: " << std::endl << current_transform_mtraix_ << std::endl;
 
   // tf2 broadcaster
-  tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+  tf_broadcaster_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(*this);
 
 }
 
