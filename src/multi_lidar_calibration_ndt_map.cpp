@@ -17,6 +17,13 @@ MultiLidarCalibrationNdtMap::MultiLidarCalibrationNdtMap()
   param_.transform_epsilon = declare_parameter<double>("transform_epsilon", 0.01);
   param_.step_size = declare_parameter<double>("step_size", 0.1);
   param_.resolution = declare_parameter<double>("resolution", 0.5);
+  param_.max_coorespondence_distance =
+    declare_parameter<double>("max_coorespondence_distance", 0.05);
+  param_.euclidean_fitness_epsilon = declare_parameter<double>("euclidean_fitness_epsilon", 1.0);
+  param_.ransac_outlier_rejection_threshold =
+    declare_parameter<double>("ransac_outlier_rejection_threshold", 1.5); // ransac outlier rejection threshold
+  param_.icp_max_iteration = declare_parameter<int>("icp_max_iteration", 100);
+  param_.icp_transform_epsilon = declare_parameter<double>("icp_transform_epsilon", 1e-9); // icp transform epsilon
 
   // sign
   is_source_pt_set_ = false;
@@ -35,6 +42,13 @@ MultiLidarCalibrationNdtMap::MultiLidarCalibrationNdtMap()
   ndt_.setTransformationEpsilon(param_.transform_epsilon);
   ndt_.setStepSize(param_.step_size);
   ndt_.setResolution(param_.resolution);
+
+  // set ipc parameters
+  icp_.setMaximumIterations(param_.icp_max_iteration);
+  icp_.setTransformationEpsilon(param_.icp_transform_epsilon);
+  icp_.setMaxCorrespondenceDistance(param_.max_coorespondence_distance);
+  icp_.setEuclideanFitnessEpsilon(param_.euclidean_fitness_epsilon);
+  icp_.setRANSACOutlierRejectionThreshold(param_.ransac_outlier_rejection_threshold);
 
   Eigen::Translation3f initial_translation(
     param_.initial_pose.at(0), param_.initial_pose.at(1), param_.initial_pose.at(2));
@@ -80,14 +94,49 @@ void MultiLidarCalibrationNdtMap::callbackLidar(const sensor_msgs::msg::PointClo
     ndt_.setInputTarget(std::make_shared<pcl::PointCloud<pcl::PointXYZI>>(source_pointcloud_));
     is_source_pt_set_ = true;
   }
+  if (!ndt_.hasConverged())
+  {
+    ndt_.align(*final_pointcloud, current_transform_mtraix_);
+    current_transform_mtraix_ = ndt_.getFinalTransformation();
 
-  ndt_.align(*final_pointcloud, current_transform_mtraix_);
+    std::cout << "NDT converged." << std::endl
+              << "The score is " << ndt_.getFitnessScore() << std::endl;
+    std::cout << "Transformation matrix:" << std::endl;
+    std::cout << current_transform_mtraix_ << std::endl;
+    Eigen::Matrix3f rotation_matrix = current_transform_mtraix_.block(0, 0, 3, 3);
+    Eigen::Vector3f translation_vector = current_transform_mtraix_.block(0, 3, 3, 1);
+    std::cout << "This transformation can be replicated using:" << std::endl;
+    std::cout << "ros2 run tf2_ros static_transform_publisher " << translation_vector.transpose()
+              << " " << rotation_matrix.eulerAngles(2,1,0).transpose() << " " << "map"
+              << " " << msg->header.frame_id.c_str() << std::endl;
+
+    Eigen::Quaternionf q(rotation_matrix);
+    geometry_msgs::msg::TransformStamped t;
+    t.header.stamp = msg->header.stamp;
+    t.header.frame_id = "map";
+    t.child_frame_id = msg->header.frame_id;
+    t.transform.translation.x = translation_vector[0];
+    t.transform.translation.y = translation_vector[1];
+    t.transform.translation.z = translation_vector[2];
+    t.transform.rotation.x = q.x();
+    t.transform.rotation.y = q.y();
+    t.transform.rotation.z = q.z();
+    t.transform.rotation.w = q.w();
+    tf_broadcaster_->sendTransform(t);
+  }
 
   if (ndt_.hasConverged())
   {
-    current_transform_mtraix_ = ndt_.getFinalTransformation();
-    std::cout << "NDT converged." << std::endl
-              << "The score is " << ndt_.getFitnessScore() << std::endl;
+    
+    std::cout << "--------------------------------------" << std::endl;
+    std::cout << "using icp to refine the transformation." << std::endl;
+    icp_.setInputSource(filtered_target_pointcloud);
+    icp_.setInputTarget(std::make_shared<pcl::PointCloud<pcl::PointXYZI>>(source_pointcloud_));
+    icp_.align(*final_pointcloud, current_transform_mtraix_);
+    current_transform_mtraix_ = icp_.getFinalTransformation();
+
+    std::cout << "ICP converged." << std::endl
+              << "The score is " << icp_.getFitnessScore() << std::endl;
     std::cout << "Transformation matrix:" << std::endl;
     std::cout << current_transform_mtraix_ << std::endl;
     Eigen::Matrix3f rotation_matrix = current_transform_mtraix_.block(0, 0, 3, 3);

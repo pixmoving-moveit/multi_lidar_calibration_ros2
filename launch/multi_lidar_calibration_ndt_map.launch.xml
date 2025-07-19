@@ -8,6 +8,11 @@
   <arg name="step_size" default="0.05" />
   <arg name="resolution" default="0.5" />
   <arg name="input/target_pointcloud" default="/sensing/lidar/front_left/ouster/points" />
+  <arg name="icp_max_iteration" default="100" />
+  <arg name="icp_transform_epsilon" default="1e-9" />
+  <arg name="max_coorespondence_distance" default="0.05" />
+  <arg name="euclidean_fitness_epsilon" default="0.5" />
+  <arg name="ransac_outlier_rejection_threshold" default="1.1" />
 
   <node pkg="multi_lidar_calibration" name="multi_lidar_calibration_ndt_map_node" exec="multi_lidar_calibration_ndt_map_node" output="screen">
     <param name="pcd_path" value="$(var pcd_path)"/>
@@ -17,6 +22,11 @@
     <param name="transform_epsilon" value="$(var transform_epsilon)"/>
     <param name="step_size" value="$(var step_size)"/>
     <param name="resolution" value="$(var resolution)" />
+    <param name="icp_max_iteration" value="$(var icp_max_iteration)"/>
+    <param name="icp_transform_epsilon" value="$(var icp_transform_epsilon)"/>
+    <param name="max_coorespondence_distance" value="$(var max_cooresspondence_distance)"/>
+    <param name="euclidean_fitness_epsilon" value="$(var euclidean_fitness_epsilon)" />
+    <param name="ransac_outlier_rejection_threshold" value="$(var ransac_outlier_rejection_threshold)" />
     <remap from="~/input/target_pointcloud" to="$(var input/target_pointcloud)"/>
   </node>
 

@@ -16,15 +16,6 @@ endif()
 
 # Declare a C++ executable
 
-ament_auto_add_library(multi_lidar_calibration_icp SHARED
-  src/multi_lidar_calibration_icp.cpp
-)
-
-ament_auto_add_executable(
-  multi_lidar_calibration_icp_node
-  src/multi_lidar_calibration_icp_node.cpp
-)
-
 target_link_libraries(
   multi_lidar_calibration_icp_node
   multi_lidar_calibration_icp

@@ -23,6 +23,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/registration/ndt.h>
+#include <pcl/registration/icp.h>
 #include <pcl/filters/approximate_voxel_grid.h>
 
 
@@ -44,6 +45,12 @@ struct Param
   double transform_epsilon;
   double step_size;
   double resolution;
+  // icp parameters
+  double max_coorespondence_distance;
+  double euclidean_fitness_epsilon;
+  double ransac_outlier_rejection_threshold;
+  int icp_max_iteration;
+  double icp_transform_epsilon;
 };
 
 class MultiLidarCalibrationNdtMap: public rclcpp::Node
@@ -59,6 +66,9 @@ private:
 
   // ndt registration
   pcl::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> ndt_;
+
+  // icp registration
+  pcl::IterativeClosestPoint<pcl::PointXYZI, pcl::PointXYZI> icp_;
 
   // transform matrix
   Eigen::Matrix4f current_transform_mtraix_;
