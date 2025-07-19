@@ -12,7 +12,15 @@
   <arg name="icp_transform_epsilon" default="1e-9" />
   <arg name="max_coorespondence_distance" default="0.05" />
   <arg name="euclidean_fitness_epsilon" default="0.5" />
-  <arg name="ransac_outlier_rejection_threshold" default="1.1" />
+  <arg name="ransac_outlier_rejection_threshold" default="0.5" />
+  <arg name="crop_box_min_x" default="-1.0" />
+  <arg name="crop_box_min_y" default="-1.0" />
+  <arg name="crop_box_min_z" default="-1.0" />
+  <arg name="crop_box_max_x" default="1.0" />
+  <arg name="crop_box_max_y" default="1.0" />
+  <arg name="crop_box_max_z" default="2.0" />
+  <arg name="negativate_crop_box" default="true" />
+  <arg name="output/cropped_target_pointcloud"/>
 
   <node pkg="multi_lidar_calibration" name="multi_lidar_calibration_ndt_map_node" exec="multi_lidar_calibration_ndt_map_node" output="screen">
     <param name="pcd_path" value="$(var pcd_path)"/>
@@ -24,10 +32,18 @@
     <param name="resolution" value="$(var resolution)" />
     <param name="icp_max_iteration" value="$(var icp_max_iteration)"/>
     <param name="icp_transform_epsilon" value="$(var icp_transform_epsilon)"/>
-    <param name="max_coorespondence_distance" value="$(var max_cooresspondence_distance)"/>
+    <param name="max_coorespondence_distance" value="$(var max_coorespondence_distance)"/>
     <param name="euclidean_fitness_epsilon" value="$(var euclidean_fitness_epsilon)" />
+    <param name="crop_box_min_x" value="$(var crop_box_min_x)" />
+    <param name="crop_box_min_y" value="$(var crop_box_min_y)" />
+    <param name="crop_box_min_z" value="$(var crop_box_min_z)" />
+    <param name="crop_box_max_x" value="$(var crop_box_max_x)" />
+    <param name="crop_box_max_y" value="$(var crop_box_max_y)" />
+    <param name="crop_box_max_z" value="$(var crop_box_max_z)" />
+    <param name="negativate_crop_box" value="$(var negativate_crop_box)" />
     <param name="ransac_outlier_rejection_threshold" value="$(var ransac_outlier_rejection_threshold)" />
     <remap from="~/input/target_pointcloud" to="$(var input/target_pointcloud)"/>
+    <remap from="~/output/cropped_pointcloud" to="$(var output/cropped_target_pointcloud)"/>
   </node>
 
 </launch>

@@ -25,6 +25,7 @@
 #include <pcl/registration/ndt.h>
 #include <pcl/registration/icp.h>
 #include <pcl/filters/approximate_voxel_grid.h>
+#include <pcl/filters/crop_box.h>
 
 
 namespace calibration
@@ -51,6 +52,15 @@ struct Param
   double ransac_outlier_rejection_threshold;
   int icp_max_iteration;
   double icp_transform_epsilon;
+
+  // crop box parameters
+  double crop_box_min_x;
+  double crop_box_min_y;
+  double crop_box_min_z;
+  double crop_box_max_x;
+  double crop_box_max_y;
+  double crop_box_max_z;
+  bool negativate_crop_box = false; // if true, crop box will be negated
 };
 
 class MultiLidarCalibrationNdtMap: public rclcpp::Node
@@ -70,13 +80,18 @@ private:
   // icp registration
   pcl::IterativeClosestPoint<pcl::PointXYZI, pcl::PointXYZI> icp_;
 
+  // crop box filter
+  pcl::CropBox<pcl::PointXYZI> crop_box_filter_;
+
   // transform matrix
   Eigen::Matrix4f current_transform_mtraix_;
 
   // tf2
   std::unique_ptr<tf2_ros::StaticTransformBroadcaster> tf_broadcaster_;
   pcl::PointCloud<pcl::PointXYZI> source_pointcloud_;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud_publisher_;
   bool is_source_pt_set_;
+  int ndt_iteration_count_;
 
 public:
   MultiLidarCalibrationNdtMap();
