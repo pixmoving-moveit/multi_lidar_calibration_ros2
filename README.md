@@ -69,7 +69,7 @@ colcon build
 2. replace the `source_pointcloud` and `target_pointcloud` with you pointcloud topics parameters in the launch file.
 3. launch calibrating program by executing the command below
 ```shell
-ros2 launch multi_lidar_calibration multi_lidar_calbiration_ndt.launch.xml
+ros2 launch multi_lidar_calibration multi_lidar_calibration_ndt.launch.xml
 ```
 4. you can see the calibration result in rviz2 as well as in the terminal.
 
